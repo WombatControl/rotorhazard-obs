@@ -1,3 +1,4 @@
+from importlib.util import source_hash
 import json
 import obspython as obs
 import requests
@@ -92,6 +93,8 @@ def script_properties():
     obs.obs_properties_add_int(props, "interval", "Update Interval (seconds)", 1, 3600, 1)
 
     obs.obs_properties_add_button(props, "button", "Refresh", refresh_pressed)
+
+    obs.obs_properties_add_button(props, "button2", "Setup Heats", setup_heats)
     return props
 
 
@@ -119,8 +122,7 @@ Add handler for when the scene refreshes - we need to get our pilots and set our
 def on_event(event):
     if event == obs.OBS_FRONTEND_EVENT_SCENE_CHANGED:
         print("Scene has changed...")
-        print(get_nodes_list())
-        
+
         if obs.obs_source_get_name(obs.obs_frontend_get_current_scene()) ==  "RaceView":
             create_race_view()
         else:
@@ -134,6 +136,7 @@ def script_load(settings):
 def create_race_view():
     current_scene = obs.obs_frontend_get_current_scene()
     scene = obs.obs_scene_from_source(current_scene)
+    nodes = get_nodes_list()
     settings = obs.obs_data_create()
 
     obs.obs_data_set_string(
@@ -146,3 +149,46 @@ def create_race_view():
     obs.obs_scene_release(scene)
     obs.obs_data_release(settings)
     obs.obs_source_release(source)
+
+    # Step one - go through each node and see if a OBS view has been created for it.
+    """for node in nodes:
+        nodeFound = 0
+        node_string = str(node)
+        sources = obs.obs_enum_sources()
+
+        for source in sources:
+            if obs.obs_source_get_name(source) == "rh_node" + node_string:
+                update_obs_view(node_string, source)
+                nodeFound = 1
+        
+        if nodeFound == 0:
+            settings = obs.obs_data_create()
+            print("We did not find rh_node" + node_string + " so we need to create it.")
+            obs.obs_data_set_string(settings, "url", "http://rotorhazard.local/stream/node/" + node_string)
+            new_source = obs.obs_source_create("browser_source", "rh_node" + node_string, settings, None)
+            obs.obs_scene_add(scene, new_source)
+            obs.obs_data_release(settings)
+            obs.obs_source_release(new_source)
+
+        obs.source_list_release(sources)
+
+    obs.obs_scene_release(scene)
+    """
+
+def update_obs_view(node, source):
+
+    settings = obs.obs_data_create()
+    obs.obs_data_set_string(settings, "url", "http://rotorhazard.local/stream/node/" + node)
+    obs.obs_source_update(source, settings)
+    obs.obs_source_release(source)
+    obs.obs_data_release(settings)
+    
+def setup_heats(props, prop):
+    response = requests.get("http://rotorhazard.local/api/heat/all")
+    status = json.loads(response.text)
+
+    heats = []
+    pilots = []
+    heat_list = status["heats"]
+
+    print(heat_list)
