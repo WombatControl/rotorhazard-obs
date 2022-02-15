@@ -15,7 +15,7 @@ This script (currently) requires a certain setup in OBS.
 
 * There must be two sets of sources:
     * Each Pilot station must have a *browser* source named "Pilot1", "Pilot2", up to the number of pilots you will be racing consecutively.
-    * Each video receiver must have its own source as well, nameb "VRX1," "VRX2," etc. These sources can be anything - if you are using a USB-OTG device they can be video devices sources, streams, etc. They can also be placeholders like images or text sources.
+    * Each video receiver must have its own source as well, named "VRX1," "VRX2," etc. These sources can be anything - if you are using a USB-OTG device they can be video devices sources, streams, etc. They can also be placeholders like images or text sources. You should have one for each node you are using in the race.
     * These sources can be grouped or arranged however you want.
 
 * The script does not change the arrangement of sources, so it is up to you to design the view for your race as you want.
