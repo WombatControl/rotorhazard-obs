@@ -56,19 +56,17 @@ def script_update(settings):
 
 def on_event(event):
     if event == obs.OBS_FRONTEND_EVENT_SCENE_CHANGED:
-
         # TODO - Have the scene be changeable through a configuration item.
         if obs.obs_source_get_name(obs.obs_frontend_get_current_scene()) ==  "RaceView":
             update_race_view()
-        else:
-            print("Not in RaceView Scene")
-
+            
 def script_load(settings):
     obs.obs_frontend_add_event_callback(on_event)
 
 def update_race_view():
         
     hide_video_sources()
+    hide_pilot_sources()
 
     current_scene = obs.obs_frontend_get_current_scene()
     scene = obs.obs_scene_from_source(current_scene)
@@ -79,6 +77,9 @@ def update_race_view():
         for source in sources:
             if obs.obs_source_get_name(source) == "Pilot" + str(view):
                 update_obs_view(str(node), source)
+                pilot_display = obs.obs_scene_find_source(scene, "Pilot" + str(view))
+                if pilot_display:
+                    obs.obs_sceneitem_set_visible(pilot_display, True)                
                 attach_video(str(view), str(node))
 
 def hide_video_sources():
@@ -101,6 +102,21 @@ def hide_video_sources():
             obs.obs_sceneitem_set_visible(video_display, False)
 
     obs.obs_scene_release(scene)
+
+def hide_pilot_sources():
+
+    # TEMP - We are going to assume no more than 8 pilot sources on the screen at one time. That is a sensible default, but we should let this be cofigurable.
+    # Sources get turned back on when we update them.
+    current_scene = obs.obs_frontend_get_current_scene()
+    scene = obs.obs_scene_from_source(current_scene)
+
+    for i in range (1, 8):
+        pilot_display = obs.obs_scene_find_source(scene, "Pilot" + str(i))
+        if pilot_display:
+            obs.obs_sceneitem_set_visible(pilot_display, False)
+
+    obs.obs_scene_release(scene)
+
 
 def attach_video(view, node):
     # We want to find the source for the VRX object for each RH node. There should be one VTX source for each node in use on the RH server.
